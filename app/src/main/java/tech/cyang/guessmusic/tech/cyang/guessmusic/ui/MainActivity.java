@@ -3,7 +3,6 @@ package tech.cyang.guessmusic.tech.cyang.guessmusic.ui;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -24,9 +23,21 @@ import tech.cyang.guessmusic.tech.cyang.guessmusic.model.IWordButtonClickListene
 import tech.cyang.guessmusic.tech.cyang.guessmusic.model.Song;
 import tech.cyang.guessmusic.tech.cyang.guessmusic.model.WordButton;
 import tech.cyang.guessmusic.tech.cyang.guessmusic.myUi.MyGridView;
+import tech.cyang.guessmusic.tech.cyang.guessmusic.util.MyLog;
 import tech.cyang.guessmusic.tech.cyang.guessmusic.util.Util;
 
 public class MainActivity extends AppCompatActivity implements IWordButtonClickListener{
+
+    public final static String TAG = "MainActivity";
+
+    /** 答案真确 */
+    public final static int STATUS_ANSWER_RIGHT = 1;
+    /** 答案错误 */
+    public final static int STATUS_ANSWER_WRONG = 2;
+    /** 答案不完整 */
+    public final static int STATUS_ANSWER_LACK = 3;
+
+
 
     private Animation mPanAnim;
     private LinearInterpolator mPanLin;
@@ -161,7 +172,18 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
     public void onWordButtonClick(WordButton wordButton){
         Toast.makeText(this,"hello",Toast.LENGTH_SHORT).show();
         setSelectWord(wordButton);
+        //检测答案
+        int checkResult = checkTheAnswer();
+        if (checkResult == STATUS_ANSWER_RIGHT){
+            //过关获得奖励
 
+        }
+        else if (checkResult == STATUS_ANSWER_WRONG){
+            //错误提示
+
+        }else if (checkResult == STATUS_ANSWER_LACK){
+            
+        }
     }
 
 
@@ -189,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
                 // 记录索引
                 mBtnSelectWords.get(i).mIndex = wordButton.mIndex;
 
-                Log.d("TAG", mBtnSelectWords.get(i).mIndex + "");
+                MyLog.d("TAG", mBtnSelectWords.get(i).mIndex + "");
 
                 // 设置待选框可见性
                 setButtonVisiable(wordButton, View.INVISIBLE);
@@ -209,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
         button.mViewButton.setVisibility(visibility);
         button.mIsVisiable = (visibility == View.VISIBLE) ? true : false;
 
-        Log.d("TAG", button.mIsVisiable + "");
+        MyLog.d(TAG, button.mIsVisiable + "");
     }
 
     //播放按钮事件
@@ -280,16 +302,24 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
     private ArrayList<WordButton> initWordSelect(){
         ArrayList<WordButton> data = new ArrayList<WordButton>();
 
-        for(int i = 0; i<4;i++){
+        for(int i = 0; i<mCurrentSong.getNameLength();i++){
             View view = Util.getView(MainActivity.this,R.layout.self_ui_gridview_item);
 
-            WordButton holder = new WordButton();
+            final WordButton holder = new WordButton();
             holder.mViewButton = (Button)view.findViewById(R.id.item_btn);
             holder.mViewButton.setText("");
             holder.mViewButton.setTextColor(Color.WHITE);
             holder.mIsVisiable = false;
 
             holder.mViewButton.setBackgroundResource(R.drawable.game_wordblank);
+            holder.mViewButton.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View arg0){
+                    clearTheAnswer(holder);
+                }
+            });
+
             data.add(holder);
         }
 
@@ -357,5 +387,28 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
         }
 
         return str.charAt(0);
+    }
+
+    /**
+     * 检查答案
+     *
+     */
+    private int checkTheAnswer(){
+        //先检车长度
+        for (int i = 0; i < mBtnSelectWords.size();i++){
+            //如果有空的，说明答案不完整
+            if (mBtnSelectWords.get(i).mWordString.length() == 0){
+                return STATUS_ANSWER_LACK;
+            }
+        }
+
+        //答案完整，再比对文字
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i<mBtnSelectWords.size(); i++){
+            sb.append(mBtnSelectWords.get(i).mWordString);
+        }
+
+        return (sb.toString().equals(mCurrentSong.getSongName()))?
+                STATUS_ANSWER_RIGHT:STATUS_ANSWER_WRONG;
     }
 }
