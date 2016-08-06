@@ -59,6 +59,13 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
     //过关界面
     private View mPassView;
 
+    //当前关索引
+    private TextView mCurrentStagePassView;
+
+    private TextView mCurrentSongNamePassView;
+
+    private TextView mCurrentStageView;
+
     // Play 按键事件
     private ImageButton mBtnPlayStart;
 
@@ -215,10 +222,58 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
         }
     }
 
+    /**
+     * 处理过关界面
+     *
+     */
     private void handlePassEvent(){
 
+        //显示当前页面
         mPassView = (LinearLayout)this.findViewById(R.id.pass_view);
         mPassView.setVisibility(View.VISIBLE);
+
+        //停止动画
+        mViewPan.clearAnimation();
+
+        //显示当前关
+        mCurrentStagePassView = (TextView)findViewById(R.id.text_current_stage_pass);
+        if (mCurrentStagePassView != null){
+            mCurrentStagePassView.setText((mCurrentStageIndex+1)+"");
+        }
+
+        //显示当前关歌曲名
+        mCurrentSongNamePassView = (TextView)findViewById(R.id.text_current_song_name_pass);
+        if (mCurrentSongNamePassView != null){
+            mCurrentSongNamePassView.setText(mCurrentSong.getSongName());
+        }
+
+        //下一关案件处理
+        ImageButton btnPass = (ImageButton)findViewById(R.id.btn_next);
+        btnPass.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View arg0){
+                if (judegAppPassed()){
+                    //进入通关界面,跳转Activity
+                    Util.startActivity(MainActivity.this,AllPassView.class);
+                }else {
+                    //开始新一关
+                    mPassView.setVisibility(View.GONE);
+
+                    //加载下一个关卡数据
+                    initCurrentStageData();
+                }
+
+            }
+        });
+    }
+
+    /**
+     * 判断是否通关
+     * @return
+     */
+    private boolean judegAppPassed(){
+        return (mCurrentStageIndex == (Const.SONG_INFO.length-1));
     }
 
 
@@ -299,7 +354,9 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
         return song;
     }
 
-
+    /**
+     * 加载当前关卡数据
+     */
     private void initCurrentStageData(){
         //读取当前关的歌曲信息
         mCurrentSong = loadStageSongInfo(++mCurrentStageIndex);
@@ -307,9 +364,19 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
         //初始化已选择框
         mBtnSelectWords = initWordSelect();
 
+        //清空原来的答案
+        mViewsWordsContainer.removeAllViews();
+
+        // 增加新的答案框
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(140,140);
         for(int i=0;i<mCurrentSong.getNameLength();i++){
             mViewsWordsContainer.addView(mBtnSelectWords.get(i).mViewButton,params);
+        }
+
+        //显示当前关索引
+        mCurrentStageView = (TextView)findViewById(R.id.text_current_stage);
+        if (mCurrentStageView != null){
+            mCurrentStageView.setText(mCurrentStageIndex +1 +"");
         }
 
         //获得文字

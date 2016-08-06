@@ -1,6 +1,8 @@
 package tech.cyang.guessmusic.tech.cyang.guessmusic.util;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -21,4 +23,18 @@ public class Util {
         return layout;
     }
 
+    //实现activity跳转
+    public static void startActivity(Context context,Class desti){
+        Intent intent =new Intent();
+        intent.setClass(context,desti);
+        context.startActivity(intent);
+
+        //关闭当前的activity
+        ((Activity)context).finish();
+    }
+
+    //自定义的对话框
+//    public static void showDialog(Context context,String message){
+//
+//    }
 }
