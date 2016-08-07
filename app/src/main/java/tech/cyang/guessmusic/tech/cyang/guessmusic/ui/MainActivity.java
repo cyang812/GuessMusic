@@ -22,6 +22,7 @@ import java.util.TimerTask;
 
 import tech.cyang.guessmusic.R;
 import tech.cyang.guessmusic.tech.cyang.guessmusic.data.Const;
+import tech.cyang.guessmusic.tech.cyang.guessmusic.model.IAlertDialogButtonListener;
 import tech.cyang.guessmusic.tech.cyang.guessmusic.model.IWordButtonClickListener;
 import tech.cyang.guessmusic.tech.cyang.guessmusic.model.Song;
 import tech.cyang.guessmusic.tech.cyang.guessmusic.model.WordButton;
@@ -39,8 +40,6 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
     public final static int STATUS_ANSWER_WRONG = 2;
     /** 答案不完整 */
     public final static int STATUS_ANSWER_LACK = 3;
-
-
 
     private Animation mPanAnim;
     private LinearInterpolator mPanLin;
@@ -95,6 +94,10 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
 
     // 金币View
     private TextView mViewCurrentCoins;
+
+    public final int ID_DIALOG_DELETE_WORD = 1;
+    public final int ID_DIALOG_TIP_ANSWER = 2;
+    public final int ID_DIALOG_LACK_COINS = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -564,6 +567,7 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
                 // 减少金币数量
                 if (!handleCoins(-getTipCoins())) {
                     // 金币数量不够，显示对话框
+                    showConfirmDialog(ID_DIALOG_LACK_COINS);
                     return;
                 }
                 break;
@@ -584,6 +588,7 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
         // 减少金币
         if (!handleCoins(-getDeleteWordCoins())) {
             // 金币不够，显示提示对话框
+            showConfirmDialog(ID_DIALOG_LACK_COINS);
             return;
         }
 
@@ -699,7 +704,8 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
 
             @Override
             public void onClick(View arg0) {
-                deleteOneWord();
+                showConfirmDialog(ID_DIALOG_DELETE_WORD);
+               // deleteOneWord();
             }
         });
     }
@@ -714,8 +720,60 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
 
             @Override
             public void onClick(View arg0) {
-                tipAnswer();
+                showConfirmDialog(ID_DIALOG_TIP_ANSWER);
+               // tipAnswer();
             }
         });
     }
+
+    //自定义的提示界面
+
+    // 消除错误答案
+    private IAlertDialogButtonListener mBtnOkDeleteWordListener = new IAlertDialogButtonListener() {
+        @Override
+        public void onClick() {
+            deleteOneWord();
+
+        }
+    };
+
+    // 正确答案提示
+    private IAlertDialogButtonListener mBtnOkTipAnswerListener = new IAlertDialogButtonListener() {
+        @Override
+        public void onClick() {
+            tipAnswer();
+
+        }
+    };
+
+    // 金币不足
+    private IAlertDialogButtonListener mBtnOkLackCoinsListener = new IAlertDialogButtonListener() {
+        @Override
+        public void onClick() {
+
+        }
+    };
+
+    /**
+     * 显示对话框
+     * @param id
+     */
+    private void showConfirmDialog(int id){
+        switch (id){
+            case ID_DIALOG_DELETE_WORD:
+                Util.showDialog(MainActivity.this,
+                        "确认花费"+getDeleteWordCoins()+"个金币去除一个错误答案？",mBtnOkDeleteWordListener);
+                break;
+            case ID_DIALOG_TIP_ANSWER:
+                Util.showDialog(MainActivity.this,
+                        "确认花费"+getTipCoins()+"个金币去除一个错误答案？",mBtnOkTipAnswerListener);
+                break;
+            case ID_DIALOG_LACK_COINS:
+                Util.showDialog(MainActivity.this,
+                        "金币不足，去商店补充",mBtnOkLackCoinsListener);
+                break;
+        }
+
+    }
 }
+

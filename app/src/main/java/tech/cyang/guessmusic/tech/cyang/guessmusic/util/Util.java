@@ -1,10 +1,16 @@
 package tech.cyang.guessmusic.tech.cyang.guessmusic.util;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.TextView;
+
+import tech.cyang.guessmusic.R;
+import tech.cyang.guessmusic.tech.cyang.guessmusic.model.IAlertDialogButtonListener;
 
 /**
  * Created by cy101 on 2016/7/31.
@@ -13,6 +19,9 @@ import android.view.View;
 //工具类，将方法定义为static，可直接调用，而不用创建其对象。
 
 public class Util {
+
+
+    public static AlertDialog mAlertDialog;
 
     public static View getView(Context context,int layoutId){
         LayoutInflater layoutInflater = (LayoutInflater)context.
@@ -33,8 +42,52 @@ public class Util {
         ((Activity)context).finish();
     }
 
-    //自定义的对话框
-//    public static void showDialog(Context context,String message){
-//
-//    }
+    //显示自定义的对话框
+    public static void showDialog(Context context, String message,
+                                  final IAlertDialogButtonListener listener){
+
+        View dialogView = null;
+        AlertDialog.Builder builder = new AlertDialog.Builder(context,R.style.Theme_Transparent);
+        dialogView = getView(context, R.layout.dialog_view);
+
+        ImageButton btnOkView = (ImageButton) dialogView.findViewById(R.id.btn_dialog_ok);
+        ImageButton btnCancleView  = (ImageButton)dialogView.findViewById(R.id.btn_dialog_cancel);
+        TextView textMessageView = (TextView)dialogView.findViewById(R.id.text_dialog_message);
+
+        textMessageView.setText(message);
+
+        //设置点击确定事件
+        btnOkView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //关闭对话框
+                if (mAlertDialog != null){
+                    mAlertDialog.cancel();
+                }
+
+                //事件回调
+                if (listener != null) {
+                    listener.onClick();
+                }
+            }
+        });
+
+        //设置点击取消事件
+        btnCancleView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //关闭对话框
+                if (mAlertDialog != null) {
+                    mAlertDialog.cancel();
+                }
+            }
+        });
+
+        //为Dialog设置View
+        builder.setView(dialogView);
+        mAlertDialog = builder.create();
+
+        //显示对话框
+        mAlertDialog.show();
+    }
 }

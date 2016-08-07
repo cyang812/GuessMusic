@@ -35,7 +35,7 @@
 
         <ImageButton
             android:id="@+id/btn_dialog_cancel"
-            android:layout_width="wrap_content"
+            android:layout_width="134dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="20dp"
             android:background="@drawable/cancel_button_icon"
@@ -43,7 +43,7 @@
 
         <ImageButton
             android:id="@+id/btn_dialog_ok"
-            android:layout_width="wrap_content"
+            android:layout_width="141dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="20dp"
             android:background="@drawable/ok_button_icon"
