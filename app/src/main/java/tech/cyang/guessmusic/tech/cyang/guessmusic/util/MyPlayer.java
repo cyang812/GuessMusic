@@ -14,8 +14,20 @@ import java.io.IOException;
 
 public class MyPlayer {
 
+    public final static int INDEX_STONE__ENTER = 0;
+
+    public final static int INDEX_STONE__CANCEL = 1;
+
+    public final static int INDEX_STONE__COIN = 2;
+
+    private final static String[] SONG_NAMES = {"enter.mp3","cancel.mp3","coin.mp3"};
+
+    //音效
+    private static MediaPlayer[] mToneMediaPlayer = new MediaPlayer[SONG_NAMES.length];
+
     private static MediaPlayer mMusicMediaPlayer;
 
+    //播放音乐
     public static void playSong(Context context,String fileName){
         if (mMusicMediaPlayer == null){
             mMusicMediaPlayer = new MediaPlayer();
@@ -39,9 +51,32 @@ public class MyPlayer {
         }
     }
 
+    //停止播放
     public static void StopSong(Context context){
         if (mMusicMediaPlayer != null){
             mMusicMediaPlayer.stop();
         }
+    }
+
+    //播放音效
+    public static void playTone(Context context,int index){
+        //加载声音
+        AssetManager assetManager = context.getAssets();
+
+        if (mToneMediaPlayer[index] == null){
+            mToneMediaPlayer[index] = new MediaPlayer();
+
+            try {
+                AssetFileDescriptor fileDescriptor = assetManager.openFd(SONG_NAMES[index]);
+
+                mToneMediaPlayer[index].setDataSource(fileDescriptor.getFileDescriptor(),
+                        fileDescriptor.getStartOffset(), fileDescriptor.getLength());
+                mToneMediaPlayer[index].prepare();
+
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+        mToneMediaPlayer[index].start();
     }
 }

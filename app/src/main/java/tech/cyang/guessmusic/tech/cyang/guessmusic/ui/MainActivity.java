@@ -12,7 +12,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -28,6 +27,7 @@ import tech.cyang.guessmusic.tech.cyang.guessmusic.model.Song;
 import tech.cyang.guessmusic.tech.cyang.guessmusic.model.WordButton;
 import tech.cyang.guessmusic.tech.cyang.guessmusic.myUi.MyGridView;
 import tech.cyang.guessmusic.tech.cyang.guessmusic.util.MyLog;
+import tech.cyang.guessmusic.tech.cyang.guessmusic.util.MyPlayer;
 import tech.cyang.guessmusic.tech.cyang.guessmusic.util.Util;
 
 public class MainActivity extends AppCompatActivity implements IWordButtonClickListener{
@@ -103,6 +103,11 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //读取游戏数据
+        int[] datas = Util.loadData(this);
+        mCurrentStageIndex = datas[Const.INDEX_LOAD_DATA_STAGE];
+        mCurrentCoins = datas[Const.INDEX_LOAD_DATA_COINS];
 
         mBtnPlayStart = (ImageButton)findViewById(R.id.btn_play_start);
         mBtnPlayStart.setOnClickListener(new View.OnClickListener() {
@@ -205,13 +210,13 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
 
     @Override
     public void onWordButtonClick(WordButton wordButton){
-        Toast.makeText(this,"hello",Toast.LENGTH_SHORT).show();
+       // Toast.makeText(this,"hello",Toast.LENGTH_SHORT).show();
         setSelectWord(wordButton);
         //检测答案
         int checkResult = checkTheAnswer();
         if (checkResult == STATUS_ANSWER_RIGHT){
             //过关获得奖励
-			Toast.makeText(this, "STATUS_ANSWER_RIGHT", Toast.LENGTH_SHORT).show();
+		//	Toast.makeText(this, "STATUS_ANSWER_RIGHT", Toast.LENGTH_SHORT).show();
             handlePassEvent();
         }
         else if (checkResult == STATUS_ANSWER_WRONG){
@@ -223,6 +228,9 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
                 mBtnSelectWords.get(i).mViewButton.setTextColor(Color.WHITE);
             }
         }
+
+        //自动播放音乐
+        handlePlayButton();
     }
 
     /**
@@ -249,6 +257,12 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
         if (mCurrentSongNamePassView != null){
             mCurrentSongNamePassView.setText(mCurrentSong.getSongName());
         }
+
+        //停止正在播放的音乐
+        MyPlayer.StopSong(MainActivity.this);
+
+        //播放音效
+        MyPlayer.playTone(MainActivity.this,MyPlayer.INDEX_STONE__COIN);
 
         //下一关案件处理
         ImageButton btnPass = (ImageButton)findViewById(R.id.btn_next);
@@ -335,15 +349,22 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
                 // 开始拨杆进入动画
                 mViewPanBar.startAnimation(mBarInAnim);
                 mBtnPlayStart.setVisibility(View.INVISIBLE);//隐藏播放按钮
+
+                //播放音乐
+                MyPlayer.playSong(MainActivity.this,mCurrentSong.getSongFileName());
             }
         }
     }
 
     @Override
     public void onPause() {
-        mViewPan.clearAnimation();
+        //保存游戏数据
+        Util.saveData(MainActivity.this,mCurrentStageIndex-1,mCurrentCoins);
 
+        mViewPan.clearAnimation();
+        MyPlayer.StopSong(MainActivity.this);
         super.onPause();
+
     }
 
     //读取当前关的歌曲信息
@@ -386,6 +407,9 @@ public class MainActivity extends AppCompatActivity implements IWordButtonClickL
         mAllWords = initAllWord();
         //更新文字
         mMyGridView.updateData(mAllWords);
+
+        //自动播放音乐
+        handlePlayButton();
     }
 
     //初始化文字待选框
