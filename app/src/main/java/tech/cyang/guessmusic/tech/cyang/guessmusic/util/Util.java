@@ -31,6 +31,7 @@ public class Util {
 
     public static AlertDialog mAlertDialog;
 
+    //建立布局和自定义控件的联系
     public static View getView(Context context,int layoutId){
         LayoutInflater layoutInflater = (LayoutInflater)context.
                 getSystemService(Context.LAYOUT_INFLATER_SERVICE);
